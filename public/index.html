@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Socket.io Demo</title>
+      <meta charset="utf-8">
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">		
+		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		
+		<style>
+			body{
+			margin-top:30px;
+			background-color:black;
+			color:white;
+			
+			}
+			#messageFormArea{
+			display:none;
+			}
+			h1{
+				width:350px;
+				margin:0 auto;
+				margin-bottom:50px;
+				
+			}
+			#username{
+				width:300px;
+			}
+			#userForm{
+				margin-top:150px;
+				width:350px;
+				margin:0 auto;
+			}
+			#create{
+				background-color:white;
+				color:black;
+				border: 2px solid;
+				border-radius: 50px;
+				padding: 10px 40px;
+			}
+			#create:hover{
+				background-color:black;
+				color:white;
+			}
+			.container{
+				width:950px;
+				margin:0 auto;
+				background-color:grey;
+				padding-bottom:50px;
+				padding-top:50px;
+				border-radius: 50px;	
+			}
+			#users{
+			color:black;
+			}
+			h3{
+				color:black;
+			}
+			.well{
+				color:black;
+			}
+		</style>
+   </head>
+   <body>
+		 	 
+		
+		<div class="container">
+		<h1>Socket.io Chat</h1>
+			<div id="userFormArea" class="row">
+				<div class="col-md-12">
+					<form id="userForm">
+						<div class="form-group">
+							<label>Enter Username</label>
+							<input class="form-control" id="username"/>
+							<br>
+							<input id="create" type="submit" class="btn-primary" value="Create Username"/>
+						</div>
+					</form>
+				</div>
+			</div>
+		
+			<div id="messageFormArea" class="row">
+				<div class="col-md-4">
+					<div class="well">
+						<h3>Current Users Online</h3>
+						<ul class="list-group" id="users"></ul>
+					</div>
+				
+				</div>
+				<div class="col-md-8">
+					<div class="chat" id="chat"></div>
+				
+				
+					<form id="messageForm">
+						<div class="form-group">
+							<label>Enter Message</label>
+							<textarea class="form-control" id="message"></textarea>
+							<br>
+							<input id="create" type="submit" class="btn-primary" value="Send Message"/>
+						</div>
+					</form>
+				</div>
+			
+			</div>		
+		</div>
+		
+		<script>
+			$(function(){
+				var socket = io.connect();
+				var $messageForm = $('#messageForm');
+				var $message = $('#message');
+				var $chat = $('#chat');
+				var $messageFormArea = $('#messageFormArea');
+				var $userFormArea = $('#userFormArea');
+				var $userForm = $('#userForm');
+				var $users = $('#users');
+				var $username = $('#username');
+				
+				
+				$messageForm.submit(function(e){
+					e.preventDefault();
+					socket.emit('send message' , $message.val());
+					$message.val();
+				});
+				
+				socket.on('new message', function(data){
+					$chat.append('<div class="well"><strong>'+data.user+'</strong>:'+data.msg+'</div>');
+				});
+				
+				$userForm.submit(function(e){
+					e.preventDefault();
+					socket.emit('new user' , $username.val(), function(data){
+						if(data){
+							$userFormArea.hide();
+							$messageFormArea.show();
+						}
+					});
+					$username.val();
+				});
+				
+				socket.on('get users', function(data){
+					var html = '';
+					for(i = 0;i<data.length;i++){
+						html += '<li class="list-group-item">'+data[i]+'</li>'
+						;
+					}
+					$users.html(html);
+				});
+				
+			});
+		</script>
+		
+		
+		
+		
+		
+		
+   </body>
+</html>
